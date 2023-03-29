@@ -1,0 +1,65 @@
+---
+title: "Notebook with the HW from Statistical Rethinking, 2023 edition"
+date: "Spring 2023"
+output: 
+    html_document:
+     df_print: paged
+     toc: true
+     toc_float: true
+---
+
+```{r, setup-options, include = FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, out.width = "100%", fig.align = "center"
+)
+```
+
+```{r}
+library(rethinking)
+```
+
+# __Week 1 Problems__
+
+## Problem 1
+
+Suppose the globe tossing data has turned out to be 4 water and 11 land. Construct the posterior distribution[^1].
+
+```{r}
+#Function to compute posterior distribution
+
+compute_posterior <- function(the_sample, poss=c(0, 0.25, 0.5, 0.75, 1)) {
+  W <- sum(the_sample == "W")
+  L <- sum(the_sample == "L")
+  ways <- sapply(poss, function(x) x^W * (1-x)^L)
+  post <- ways/sum(ways)
+  data.frame(poss, ways, post = round(post, 3))
+}
+
+#Our sample
+
+samp <- c(rep("W", 4), rep("L", 11))
+compute_posterior(samp, poss=seq(from=0, to=1, len=11))
+```
+
+## Problem 2
+
+Using the posterior distribution from 1, compute the posterior predictive distribution for the next 5 tosses of the same globe. Using the sampling method is recommended. 
+
+```{r}
+p_samples <- rbeta(1e4, 4+1, 11+1)
+W_sim <- rbinom(1e4, size=5, p=p_samples)
+plot(table(W_sim), ylab="Count", xlab="Number of W")
+```
+
+## Problem 3
+
+Use the posterior predictive distribution from 2 to calculate the probability of >= 3 water samples in the next 5 tosses. 
+
+```{r}
+sum(W_sim >= 3)
+```
+
+
+[^1]: Unique combination of data, likelihood, parameters and priors leads to a unique _posterior distribution_. The distribution contains the relative plausibility of different parameter values, conditional on the data and model. 
+
+
